@@ -1,0 +1,82 @@
+version: "3"
+services:
+  traefik:
+    image: traefik:1.6
+    command:
+      - "--api"
+      - "--entrypoints=Name:http Address::80"
+      - "--defaultentrypoints=http"
+      - "--docker"
+      - "--docker.swarmMode"
+      - "--docker.domain=odoo.local"
+      - "--docker.watch"
+      - "--logLevel=INFO"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - webgateway
+      - traefik
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+  web:
+    image: odoo:latest
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - odoo-config:/etc/odoo
+      - odoo-addons:/mnt/extra-addons
+    networks:
+      - traefik
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.backend=odoo"
+        - "traefik.frontend.passHostHeader=true"
+        - "traefik.frontend.rule=Host:test.odoo.local"
+        - "traefik.docker.network=test_traefik"
+        - "traefik.backend.loadbalancer.stickiness=true"
+        - "traefik.backend.loadbalancer.method=drr"
+        - "traefik.port=8069"
+      replicas: 10
+#      placement:
+#        constraints: [node.role == worker]
+  db:
+    image: postgres:9.4
+    ports:
+      - "5432:5432"
+    networks:
+      - traefik
+    environment:
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+
+networks:
+  webgateway:
+    driver: overlay
+    external: true
+  traefik:
+    driver: overlay
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+  odoo-config:
+  odoo-addons:
