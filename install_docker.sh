@@ -1,4 +1,6 @@
-yum install -y yum-utils device-mapper-persistent-data lvm2 epel-release python-pip
+yum install -y yum-utils device-mapper-persistent-data lvm2 epel-release
+
+yum install -y python-pip
 
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
