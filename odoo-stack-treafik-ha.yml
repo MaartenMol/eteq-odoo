@@ -1,0 +1,123 @@
+version: "3.4"
+services:
+  traefik_init:
+    image: traefik:1.6
+    command:
+      - "storeconfig"
+      - "--api"
+      - "--entrypoints=Name:http Address::80"
+      - "--defaultentrypoints=http"
+      - "--docker"
+      - "--docker.swarmMode"
+      - "--docker.domain=vsphere.local"
+      - "--docker.watch"
+      - "--logLevel=INFO"
+      - "--consul"
+      - "--consul.endpoint=consul:8500"
+      - "--consul.prefix=odoo"
+    networks:
+      - traefik
+    deploy:
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - consul
+  traefik:
+    image: traefik:1.5
+    depends_on:
+      - traefik_init
+      - consul
+    command:
+      - "--consul"
+      - "--consul.endpoint=consul:8500"
+      - "--consul.prefix=traefik"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - webgateway
+      - traefik
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+  consul:
+    image: consul
+    command: agent -server -bootstrap-expect=1
+    volumes:
+      - consul-data:/consul/data
+    environment:
+      - CONSUL_LOCAL_CONFIG={"datacenter":"us_east2","server":true}
+      - CONSUL_BIND_INTERFACE=eth0
+      - CONSUL_CLIENT_INTERFACE=eth0
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    networks:
+      - traefik
+
+  web:
+    image: odoo:latest
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - odoo-config:/etc/odoo
+      - odoo-addons:/mnt/extra-addons
+    networks:
+      - traefik
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.backend=odoo"
+        - "traefik.frontend.passHostHeader=true"
+        - "traefik.frontend.rule=Host:odoo.vsphere.local"
+        - "traefik.docker.network=odoo_traefik"
+        - "traefik.backend.loadbalancer.stickiness=true"
+        - "traefik.backend.loadbalancer.method=drr"
+        - "traefik.port=8069"
+      replicas: 1
+#      placement:
+#        constraints: [node.role == worker]
+  db:
+    image: postgres:9.4
+    ports:
+      - "5432:5432"
+    networks:
+      - traefik
+    environment:
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+
+networks:
+  webgateway:
+    driver: overlay
+    external: true
+  traefik:
+    driver: overlay
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+  odoo-config:
+  odoo-addons:
+  consul-data:
+      driver: [not local]
