@@ -5,5 +5,7 @@ run following to initiate stack: ```docker stack deploy -c odoo-stack-treafik.ym
 
 run following to promote worker to manager: ```docker node promote NODE_NAME```
 
+run following to initiate ha stack: ```docker stack deploy -c odoo-stack-treafik-ha.yml traefik```
+
 # Visual-mapper
 ![](https://img.maartenmol.nl/36dd8a29.png)
