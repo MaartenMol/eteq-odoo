@@ -122,9 +122,5 @@ volumes:
   odoo-web-data:
   odoo-db-data:
   odoo-config:
-<<<<<<< HEAD
-  odoo-addons:
-=======
   odoo-addons:
   consul-data:
->>>>>>> 57604d3d2341f0e20da6d3ff4bc65d46c3c35012
