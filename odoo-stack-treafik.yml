@@ -47,7 +47,7 @@ services:
         - "traefik.enable=true"
         - "traefik.backend=odoo"
         - "traefik.frontend.passHostHeader=true"
-        - "traefik.frontend.rule=Host:test.odoo.local"
+        - "traefik.frontend.rule=Host:odoo.vsphere.local"
         - "traefik.docker.network=test_traefik"
         - "traefik.backend.loadbalancer.stickiness=true"
         - "traefik.backend.loadbalancer.method=drr"
