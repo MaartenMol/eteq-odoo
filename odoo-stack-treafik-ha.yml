@@ -120,4 +120,3 @@ volumes:
   odoo-config:
   odoo-addons:
   consul-data:
-      driver: [not local]
