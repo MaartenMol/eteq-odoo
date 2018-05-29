@@ -8,7 +8,7 @@ services:
       - "--defaultentrypoints=http"
       - "--docker"
       - "--docker.swarmMode"
-      - "--docker.domain=odoo.local"
+      - "--docker.domain=vsphere.local"
       - "--docker.watch"
       - "--logLevel=INFO"
     volumes:
@@ -48,7 +48,7 @@ services:
         - "traefik.backend=odoo"
         - "traefik.frontend.passHostHeader=true"
         - "traefik.frontend.rule=Host:odoo.vsphere.local"
-        - "traefik.docker.network=test_traefik"
+        - "traefik.docker.network=odoo_traefik"
         - "traefik.backend.loadbalancer.stickiness=true"
         - "traefik.backend.loadbalancer.method=drr"
         - "traefik.port=8069"
