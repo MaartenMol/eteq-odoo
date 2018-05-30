@@ -9,7 +9,7 @@ services:
       - "--defaultentrypoints=http"
       - "--docker"
       - "--docker.swarmmode"
-      - "--docker.domain=jmaitrehenry.ca"
+      - "--docker.domain=vsphere.local"
       - "--docker.watch"
       - "--consul"
       - "--consul.endpoint=consul:8500"
