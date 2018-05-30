@@ -120,7 +120,27 @@ networks:
 
 volumes:
   odoo-web-data:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.0.1.149,nolock,soft,rw"
+      device: ":/mnt/Volume1/opslag/odoo-web-data"
   odoo-db-data:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.0.1.149,nolock,soft,rw"
+      device: ":/mnt/Volume1/opslag/odoo-db-data"
   odoo-config:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.0.1.149,nolock,soft,rw"
+      device: ":/mnt/Volume1/opslag/odoo-config"
   odoo-addons:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.0.1.149,nolock,soft,rw"
+      device: ":/mnt/Volume1/opslag/odoo-addons"
   consul-data:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.0.1.149,nolock,soft,rw"
+      device: ":/mnt/Volume1/opslag/consul-data"
