@@ -1,0 +1,79 @@
+version: "3.4"
+services:
+  traefik_init:
+    image: traefik:1.6
+    command:
+      - "storeconfig"
+      - "--web"
+      - "--entrypoints=Name:http Address::80"
+      - "--defaultentrypoints=http"
+      - "--docker"
+      - "--docker.swarmmode"
+      - "--docker.domain=vsphere.local"
+      - "--docker.watch"
+      - "--consul"
+      - "--consul.endpoint=consul:8500"
+      - "--consul.prefix=traefik"
+      - "--logLevel=INFO"
+    networks:
+      - traefik
+    deploy:
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - consul
+  traefik:
+    image: traefik:1.6
+    depends_on:
+      - traefik_init
+      - consul
+    command:
+      - "--consul"
+      - "--consul.endpoint=consul:8500"
+      - "--consul.prefix=traefik"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - webgateway
+      - traefik
+    ports:
+      - 80:80
+      - 8080:8080
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+  consul:
+    image: consul
+    command: agent -server -bootstrap-expect=1
+    volumes:
+      - consul-data:/consul/data
+    environment:
+      - CONSUL_LOCAL_CONFIG={"datacenter":"us_east2","server":true}
+      - CONSUL_BIND_INTERFACE=eth0
+      - CONSUL_CLIENT_INTERFACE=eth0
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    networks:
+      - traefik
+
+networks:
+  webgateway:
+    driver: overlay
+    external: true
+  traefik:
+    driver: overlay
+
+volumes:
+  consul-data:
