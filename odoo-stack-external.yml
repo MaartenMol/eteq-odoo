@@ -7,10 +7,10 @@ services:
     ports:
       - "8069:8069"
     environment:
-      - HOST=10.0.146
+      - HOST=10.0.1.146
       - PORT=5432
-      - USER=postgres
-      - PASSWORD=secretpassword
+      - USER=odoo
+      - PASSWORD=P@ssword
     volumes:
       - odoo-web-data:/var/lib/odoo
       - odoo-config:/etc/odoo
