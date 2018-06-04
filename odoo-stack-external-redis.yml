@@ -1,0 +1,57 @@
+version: "3.4"
+services:
+  web:
+    image: odoo:latest
+    ports:
+      - "8069:8069"
+    environment:
+      - HOST=10.0.1.146
+      - PORT=5432
+      - USER=odoo
+      - PASSWORD=P@ssword
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - odoo-config:/etc/odoo
+      - odoo-addons:/mnt/extra-addons
+    networks:
+      - traefik_traefik
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.backend=odoo"
+        - "traefik.frontend.passHostHeader=true"
+        - "traefik.frontend.rule=Host:odoo.vsphere.local"
+        - "traefik.docker.network=traefik_traefik"
+        - "traefik.backend.loadbalancer.stickiness=true"
+        - "traefik.backend.loadbalancer.method=drr"
+        - "traefik.port=8069"
+      replicas: 1
+      
+  redis:
+    image: redis
+    ports: 
+      - 6379:6379
+    networks:
+      - traefik_traefik
+
+networks:
+  traefik_traefik:
+    external:
+      name: traefik_traefik
+
+volumes:
+  odoo-web-data:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.0.1.149,nolock,rw"
+      device: ":/mnt/Volume1/opslag/odoo-web-data"
+  odoo-config:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.0.1.149,nolock,rw"
+      device: ":/mnt/Volume1/opslag/odoo-config"
+  odoo-addons:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.0.1.149,nolock,rw"
+      device: ":/mnt/Volume1/opslag/odoo-addons"
