@@ -4,8 +4,9 @@ services:
     image: traefik:1.6
     command:
       - "storeconfig"
-      - "--metrics"
-      - "--api"
+      - "--web"
+      - "--web.metrics.prometheus"
+      - "--web.metrics.prometheus.buckets="0.1,0.3,1.2,5.0""
       - "--entrypoints=Name:http Address::80"
       - "--defaultentrypoints=http"
       - "--docker"
