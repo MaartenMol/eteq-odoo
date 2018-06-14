@@ -4,7 +4,7 @@ services:
     image: traefik:1.6
     command:
       - "storeconfig"
-      - "--web"
+      - "--metrics"
       - "--api"
       - "--entrypoints=Name:http Address::80"
       - "--defaultentrypoints=http"
