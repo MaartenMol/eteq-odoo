@@ -5,6 +5,7 @@ services:
     command:
       - "storeconfig"
       - "--web"
+      - "--api"
       - "--entrypoints=Name:http Address::80"
       - "--defaultentrypoints=http"
       - "--docker"
